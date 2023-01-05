@@ -1,51 +1,39 @@
 #include <iostream>
+#include <string.h>
 #include <vector>
 #include <algorithm>
 using namespace std;
 
-int t;
-vector<bool> primes(5000004, true);
+int n;
+int ranges[300][300];
 
-void solve() {
-    int n;
-    cin >> n;
-    vector<int> rooms(n);
-    for(int i = 0; i < n; i++) {
-        cin >> rooms[i];
-        if(rooms[i]%2 == 0) {
-            rooms[i] /= 2;
-        }
-        else {
-            int p = rooms[i];
-            while(!primes[p]) {
-                p -= 4;
-            }
-            rooms[i] = (rooms[i]-p)/2+1;
-        }
+bool correct(int ind, const vector<int> &arr) {
+    int mini = INT32_MAX;
+    int maxi = -INT32_MAX;
+    for(int i = ind; i < n; i++) {
+        mini = min(arr[i], mini);
+        maxi = max(arr[i], maxi);
+        if(maxi-mini != ranges[ind][i-ind]) return false;
     }
-    pair<int, int> mini = {-1, INT32_MAX};
-    for(int i = n-1; i >= 0; i--) {
-        if(rooms[i]-rooms[i]%2 <= mini.second) {
-            mini = {rooms[i], rooms[i]-rooms[i]%2};
-        }
-    };
-    if(mini.first%2 == 1) cout << "Farmer John" << endl;
-    else cout << "Farmer Nhoj" << endl;
-
-}
-
-void sieve() {
-    for(int i = 2; i*i < primes.size(); i++) {
-        if(primes[i]) {
-            for(int j = i; j*i < primes.size(); j++) {
-                primes[j*i] = false;
-            }
-        }
-    }
+    return true;
 }
 
 int main() {
-    sieve();
-    cin >> t;
-    for(int i = 0; i < t; i++) solve();
+    cin >> n;
+    for(int i = 0; i < n; i++) {
+        for(int j = i; j < n; j++) {
+            cin >> ranges[i][j-i];
+        }
+    }
+    vector<int> arr(n, 0);
+    for(int i = n-2; i >= 0; i--) {
+        arr[i] = arr[i+1]+ranges[i][1];
+        if(!correct(i, arr)) {
+            arr[i] = arr[i+1]-ranges[i][1];
+        }
+    }
+    for(int i = 0; i < n-1; i++) {
+        cout << arr[i] << " ";
+    }
+    cout << arr[n-1] << endl;
 }
