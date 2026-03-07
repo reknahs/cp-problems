@@ -1,4 +1,4 @@
-// datastructures/dsu.h
+// datastructures/dsu.cpp
 #include <vector>
 using namespace std;
 
