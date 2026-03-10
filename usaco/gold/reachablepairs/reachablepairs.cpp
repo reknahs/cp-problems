@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <string>
 #define ll long long
 using namespace std;
 
@@ -12,26 +11,24 @@ struct DSU {
     vector<int> e;
     vector<int> marker;
     ll score;
-    ll contrib(int s, int m) {ll x = s-m; return x*(x-1)/2;}
+    ll contrib(int m) {return (ll)m*(m-1)/2;}
     void init(int N) { e = vector<int>(N,-1); marker = vector<int>(N, 0); score = 0;}
     int find(int x) { return e[x] < 0 ? x : e[x] = find(e[x]); }
-    bool sameSet(int a, int b) { return find(a) == find(b); }
-    int size(int x) { return -e[find(x)]; }
-    bool unite(int x, int y) { // union by size
+    bool unite(int x, int y) {
         x = find(x), y = find(y); if(x == y) return 0;
         if(e[x] > e[y]) swap(x,y);
-        score -= contrib(-e[x], marker[x]);
-        score -= contrib(-e[y], marker[y]);
+        score -= contrib(marker[x]);
+        score -= contrib(marker[y]);
         e[x] += e[y]; e[y] = x;
         marker[x] += marker[y];
-        score += contrib(-e[x], marker[x]);
+        score += contrib(marker[x]);
         return 1;
     }
-    void setMarker(int x, int m) {
+    void addMarker(int x, int m) {
         x = find(x);
-        score -= contrib(-e[x], marker[x]);
+        score -= contrib(marker[x]);
         marker[x] += m;
-        score += contrib(-e[x], marker[x]);
+        score += contrib(marker[x]);
     }
     ll getScore() {return score;}
 };
@@ -50,27 +47,24 @@ int main() {
 
     DSU dsu;
     dsu.init(n);
-    for(int i = 0; i < n-1; i++) {
+    vector<bool> active(n, false);
+    for(int i = 0; i < n; i++) {
         if(times[i] == '0') continue;
+        active[i] = true;
         for(int j: edges[i]) {
-            if(times[j] == '1') dsu.unite(i, j);
+            if(active[j]) dsu.unite(i, j);
         }
     }
-    for(int i = 0; i < n-1; i++) {
-        if(times[i] == '1') dsu.setMarker(i, 1);
-    }
-    vector<ll> answers = {dsu.getScore()};
-
-    for(int i = n-2; i >= 0; i--) {
-        if(times[i] == '1') {
-            dsu.setMarker(i, -1);
-        }
-        else if(times[i] == '0') {
+    vector<ll> answers(n);
+    for(int i = n-1; i >= 0; i--) {
+        if(times[i] == '0') {
+            active[i] = true;
             for(int j: edges[i]) {
-                if(j > i || times[j] == '1') dsu.unite(i, j);
+                if(active[j]) dsu.unite(i, j);
             }
         }
-        answers.push_back(dsu.getScore());
+        dsu.addMarker(i, 1);
+        answers[i] = dsu.getScore();
     }
-    for(int i = answers.size()-1; i >= 0; i--) cout << answers[i] << endl;
+    for(ll i: answers) cout << i << endl;
 }
